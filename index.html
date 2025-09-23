@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-TW"><head><meta charset="utf-8"><title>NICU — 全藥品版 (從 Excel 匯入)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family: "Microsoft JhengHei", sans-serif;margin:18px;background:#f7f7f7;color:#222}
+.container{max-width:1000px;margin:auto;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.05)}
+h2{text-align:center;margin-bottom:12px}
+label{display:block;margin-top:10px;font-weight:700}
+select,input{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #ccc;font-size:1em}
+.field{margin-top:12px;padding:10px;background:#fafafa;border-radius:8px;border:1px solid #eee}
+.value{padding:10px;background:#fff;border-radius:6px;border:1px solid #ddd;min-height:30px;white-space:pre-line}
+.result{padding:12px;background:#FFF8DC;border-radius:8px;border:2px solid #e0d700;font-weight:800;font-size:1.2em;text-align:center}
+.btns{margin-top:14px;display:flex;gap:10px}
+button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+button.clear{background:#eee}
+button.copy{background:#ffd84d}
+.small{font-size:0.9em;color:#666;margin-top:8px}
+</style></head><body><div class="container">
+<h2>NICU 給藥計算機 — 由 Excel 全藥品匯入</h2>
+
+<label>藥品項目：</label>
+<select id="drugSelect"><option value="">-- 請選擇藥品 --</option>
+<option value="R2" data-name="Ampicillin
+(500mg/Vial)" data-nicu="1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins" data-E=" 5mL 注射用水" data-D="-" data-F="=C2/100" data-H="-" data-J="=F2" data-G="-" data-I="-" data-time="30">Ampicillin
+(500mg/Vial)</option><option value="R3" data-name="Gentamicin
+(80mg/2mL/Vial)" data-nicu="取實際dose，稀釋成4倍量  (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins" data-E="-" data-D="=C3/40" data-F="-" data-H="-" data-J="=D3*4" data-G="N/S 4倍" data-I="-" data-time="60">Gentamicin
+(80mg/2mL/Vial)</option><option value="R4" data-name="CeFoTaxiMe
+(2g/Vial)" data-nicu="1vial加入10mL 注射用水 (1mL=200mg)，取實際dose，稀釋成5倍量 (1mL=40mg)，建議用1.5mL N/S drip 30 mins." data-E="10mL注射用水" data-D="-" data-F="=C4/200" data-H="-" data-J="=F4*5" data-G="D/W N/S 5倍" data-I="-" data-time="30">CeFoTaxiMe
+(2g/Vial)</option><option value="R5" data-name="Cefazolin
+(1000mg/vial)" data-nicu="1 vail 加入 10mL N/S (1mL=100mg) 配置，取實際dose，建議用1.5mL N/S drip 30 mins" data-E="10mL N/S" data-D="-" data-F="=C5/100" data-H="-" data-J="=F5" data-G="-" data-I="-" data-time="30">Cefazolin
+(1000mg/vial)</option><option value="R6" data-name="Ceftazidime
+(500mg/vial)" data-nicu="1 vail 加入 5mL N/S (1mL=90mg)，取實際dose給藥，建議用1.5mL N/S drip 60 mins" data-E="5mL N/S" data-D="-" data-F="=C6/90" data-H="-" data-J="=F6" data-G="-" data-I="-" data-time="60">Ceftazidime
+(500mg/vial)</option><option value="R7" data-name="Ceftriaxone
+  (1g/Vial)" data-nicu="1 vail 加入 10mL 注射用水 (1mL=100mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=40mg) ,不足1mL者加到1mL，建議用1.5 mL N/S drip 60mins" data-E="10mL注射用水" data-D="-" data-F="=C7/100" data-H="-" data-J="=F7*2.5" data-G="N/S 2.5倍" data-I="-" data-time="60">Ceftriaxone
+  (1g/Vial)</option><option value="R8" data-name="Cefepime
+(1000mg/Vial)" data-nicu="1 vail 加入 10mL N/S 配置 (1mL=100mg)，取實際dose，建議用1.5 mL N/S drip 30mins." data-E="10mL N/S" data-D="-" data-F="=C8/200" data-H="-" data-J="=F8" data-G="-" data-I="-" data-time="30">Cefepime
+(1000mg/Vial)</option><option value="R9" data-name="Oxacillin
+(500mg/Vial)" data-nicu="1 vail 加入 5mL N/S (1mL=100mg)，取實際dose給藥，稀釋成5倍量 (1ml=20mg)，建議用1.5mL N/S drip 60 mins." data-E="5mL N/S" data-D="-" data-F="=C9/100" data-H="-" data-J="=F9*5" data-G="N/S 5倍" data-I="-" data-time="60">Oxacillin
+(500mg/Vial)</option><option value="R10" data-name="Amoxicillin 1.0g + Clavulanate 0.2g (1.2g/vial)" data-nicu="1vial加入20mL N/S (1mL=60mg A+C)，取實際dose，以N/S稀釋2.5倍 (1ml=24mg A+C),建議用1.5mL N/S drip 30 mins。" data-E="20mL N/S" data-D="-" data-F="=C10/60" data-H="-" data-J="=F10*2.5" data-G="N/S 2.5倍" data-I="-" data-time="30">Amoxicillin 1.0g + Clavulanate 0.2g (1.2g/vial)</option><option value="R11" data-name="Ampicillin/Sulbactam
+(A+S 1.5g/vial)" data-nicu="1 vail 加入 3.2 mL N/S (1mL=375mg ampicillin+sulbactam)，取實際dose，稀釋成10倍量 (1mL=37.5mg)，建議用1.5mL N/S drip 30 mins." data-E="3.2mL N/S" data-D="-" data-F="=C11/375" data-H="-" data-J="=F11*10" data-G="N/S 10倍" data-I="-" data-time="30">Ampicillin/Sulbactam
+(A+S 1.5g/vial)</option><option value="R12" data-name="Piperacillin sodium 2 g + Tazobactam sodium 0.25 g/vial)" data-nicu="1 vial加入10 mL N/S (1mL=202.5mg PIP+TAZO), 取實際dose, 稀釋成2.5倍量 (1mL=81 mg PIP+TAZO)，建議用1.5mL N/S drip 30 mins" data-E="10mL N/S" data-D="-" data-F="=C12/202.5" data-H="-" data-J="=F12*2.5" data-G="N/S 2.5倍" data-I="-" data-time="30">Piperacillin sodium 2 g + Tazobactam sodium 0.25 g/vial)</option><option value="R13" data-name="Ertapenem 1g/Vial" data-nicu="1 vail 加入 10mL 注射用水配置 (1mL=100mg)，取實際dose，以N/S稀釋成5倍量 (1mL=20mg) 給藥，建議用1.5mL N/S drip 30 mins." data-E="10mL注射用水" data-D="-" data-F="=C13/100" data-H="-" data-J="=F13*5" data-G="N/S 5倍" data-I="-" data-time="30">Ertapenem 1g/Vial</option><option value="R14" data-name="Meropenem
+(250mg/Vial)" data-nicu="1vial加入12.5mL N/S (1mL=20mg)，  取實際dose，建議用1.5mL N/S drip 30 mins(Extend IV infusion:240mins)" data-E="12.5mL N/S" data-D="-" data-F="=C14/20" data-H="-" data-J="=F14" data-G="-" data-I="-" data-time="30/240">Meropenem
+(250mg/Vial)</option><option value="R15" data-name="Teicoplanin
+(200 mg/Vial)" data-nicu="1vial加入3mL 注射用水 (1mL=66.66mg)，  取實際dose，建議用1.5mL N/S drip 30 mins" data-E="3mL注射用水" data-D="-" data-F="=C15/66.66" data-H="-" data-J="=F15" data-G="-" data-I="-" data-time="30">Teicoplanin
+(200 mg/Vial)</option><option value="R16" data-name="Metronidazole
+(500mg/100mL/bot)" data-nicu="不稀釋, IVD 30-60 mins" data-E="-" data-D="=C16/5" data-F="-" data-H="-" data-J="=D16" data-G="-" data-I="-" data-time="30-60">Metronidazole
+(500mg/100mL/bot)</option><option value="R17" data-name="Colistin
+( 2MU/Vial=66.8mg CBA/vial)" data-nicu="1vial加入2mL N/S (1mL=1MU=33.4mg CBA)，取實際dose，稀釋成2倍量(1mL=16.7mg)，不足1mL者加到1mL，建議用1.5mL N/S drip 30 mins。" data-E="2mL N/S" data-D="-" data-F="=C17/33.4" data-H="-" data-J="=F17*2" data-G="N/S 2倍" data-I="-" data-time="30">Colistin
+( 2MU/Vial=66.8mg CBA/vial)</option><option value="R18" data-name="Clindamycin(針劑) 300mg/2mL/Amp" data-nicu="取實際dose，稀釋成25倍量  (濃度:1mL=6mg)給藥，建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C18/150" data-F="-" data-H="-" data-J="=D18*25" data-G="N/S 25倍" data-I="-" data-time="30">Clindamycin(針劑) 300mg/2mL/Amp</option><option value="R19" data-name="Fluconazole 
+(100 mg/50 mL/Vial)" data-nicu="取實際dose，建議用1.5mL N/S drip 60 mins" data-E="-" data-D="=C19/2" data-F="-" data-H="-" data-J="=D19" data-G="-" data-I="-" data-time="60">Fluconazole 
+(100 mg/50 mL/Vial)</option><option value="R20" data-name="Amphotericin B
+(50mg/Vial)" data-nicu="1vial加入10mL 注射用水(1mL=5mg)，取實際dose，以D5W稀釋成50倍量 (1ml=0.1mg)，不足1mL者加到1mL，建議用1.5 mL D5W drip 120-360min " data-E="10mL注射用水" data-D="-" data-F="=C20/5" data-H="-" data-J="=F20*50" data-G="D5W 50倍" data-I="-" data-time="120-360">Amphotericin B
+(50mg/Vial)</option><option value="R21" data-name="Liposomal Amphotericin B 50 mg/Vial" data-nicu="1 vial 加入 12 mL 無菌注射用水 (1ml=4mg) 配置，取實際dose，以D5W稀釋成4倍量 (1ml=1mg) ，建議用1.5 mL D5W drip 120 mins" data-E="12mL注射用水" data-D="-" data-F="=C21/4" data-H="-" data-J="=F21*4" data-G="D5W 4倍" data-I="-" data-time="120">Liposomal Amphotericin B 50 mg/Vial</option><option value="R22" data-name="Micafungin 50mg/Vial" data-nicu="1vial加入5 mL NS or D5W配製後(勿劇烈振搖)(1mL=10mg)，取實際dose，稀釋成10倍量(1mL=1mg)，建議用1.5 mL N/S drip 60min" data-E="5mL N/S D5W" data-D="-" data-F="=C22/10" data-H="-" data-J="=F22*10" data-G="D/W N/S 10倍" data-I="-" data-time="60">Micafungin 50mg/Vial</option><option value="R23" data-name="Acyclovir
+(250 mg/Vial)" data-nicu="1vial加入10mL N/S(1mL=25mg)，取實際dose，以N/S稀釋成5倍量 (1ml=5mg)，不足1mL者加到1mL，建議用1.5 mL N/S drip 60min " data-E="10mL N/S" data-D="-" data-F="=C23/25" data-H="-" data-J="=F23*5" data-G="N/S 5倍" data-I="-" data-time="60">Acyclovir
+(250 mg/Vial)</option><option value="R24" data-name="Ganciclovir
+(500mg/Vial)" data-nicu="1vial加入10mL 注射用水 (1mL=50mg) 配置，取實際dose，以N/S稀釋成5倍量 (1ml=10mg)，不足1mL者加到1mL，建議用1.5 mL N/S drip 60min " data-E="10mL注射用水" data-D="-" data-F="=C24/50" data-H="-" data-J="=F24*5" data-G="N/S 5倍" data-I="-" data-time="60">Ganciclovir
+(500mg/Vial)</option><option value="R25" data-name="Calcium gluconate
+(1000mg/10mL/Amp)" data-nicu="抽實際dose (1mL=100mg)，稀釋成2倍量 (1ml=50mg) 給予，建議用1.5 mL N/S drip 30mins。" data-E="-" data-D="=C25/100" data-F="-" data-H="-" data-J="=D25*2" data-G="D5W N/S 2倍" data-I="-" data-time="30">Calcium gluconate
+(1000mg/10mL/Amp)</option><option value="R26" data-name="Furosemide
+(20mg/2mL/Amp)" data-nicu="不需稀釋(=10mg/mL) 取實際dose，建議用1.5mL N/S drip 15 mins" data-E="-" data-D="=C26/10" data-F="-" data-H="-" data-J="=D26" data-G="-" data-I="-" data-time="15">Furosemide
+(20mg/2mL/Amp)</option><option value="R27" data-name="Bumetanide
+(2mg/4mL/Amp) " data-nicu="取實際dose, 稀釋為2倍量 (1ml=0.25mg), IVP 1-2 mins" data-E="-" data-D="=C27/0.5" data-F="-" data-H="-" data-J="=D27*2" data-G="D5W N/S 2倍" data-I="-" data-time="1-2">Bumetanide
+(2mg/4mL/Amp) </option><option value="R28" data-name="Ibuprofen
+(10mg/2mL/Amp)" data-nicu="不稀釋取實際dose，建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C28/5" data-F="-" data-H="-" data-J="=D28" data-G="-" data-I="-" data-time="30">Ibuprofen
+(10mg/2mL/Amp)</option><option value="R29" data-name="Propacetamol 1 g/Vial(粉+水)" data-nicu="1 vial 加入 5mL 溶解液 (1mL=200mg) 配置，取實際dose，以N/S稀釋成10倍量 (1ml=20mg) ，建議用1.5 mL N/S drip 30 mins" data-E="5mL 溶解液" data-D="-" data-F="=C29/200" data-H="-" data-J="=F29*10" data-G="N/S 10倍" data-I="-" data-time="30">Propacetamol 1 g/Vial(粉+水)</option><option value="R30" data-name="Aminophylline
+(250mg/10mL/Amp)" data-nicu="不需稀釋(=25mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins  " data-E="-" data-D="=C30/25" data-F="-" data-H="-" data-J="=D30" data-G="-" data-I="-" data-time="30">Aminophylline
+(250mg/10mL/Amp)</option><option value="R31" data-name="Caffeine citrate
+(20mg/mL/Amp)" data-nicu="不需稀釋(=20mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins  " data-E="-" data-D="=C31/20" data-F="-" data-H="-" data-J="=D31" data-G="-" data-I="-" data-time="30">Caffeine citrate
+(20mg/mL/Amp)</option><option value="R32" data-name="Dexamethasone 
+(5mg/mL/Amp)" data-nicu="不需稀釋(=5mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins  " data-E="-" data-D="=C32/5" data-F="-" data-H="-" data-J="=D32" data-G="-" data-I="-" data-time="30">Dexamethasone 
+(5mg/mL/Amp)</option><option value="R33" data-name="Hydrocortisone
+(100mg/Vial)" data-nicu="IVP：1vial加入2mL N/S (1mL=50mg) 配置， 取實際dose, IVP&gt;30 sec" data-E="2mL N/S" data-D="-" data-F="=C33/50" data-H="-" data-J="=F33" data-G="-" data-I="-" data-time="&gt;30sec">Hydrocortisone
+(100mg/Vial)IVP</option><option value="R34" data-name="Hydrocortisone
+(100mg/Vial)" data-nicu="IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins" data-E="2mL N/S" data-D="-" data-F="=IF(C34/50&lt;=0.1,&quot;抽0.1mL,dilute to 1mL&quot;,C34/50)" data-H="=IF(C34/50&lt;=0.1,C34/5,&quot;-&quot;)" data-J="=IF(C34/50&lt;=0.1,C34/5*5,C34/50*50)" data-G="=IF(C34/50&lt;=0.1,&quot;-&quot;,&quot;NS 50倍&quot;)" data-I="=IF(C34/50&lt;=0.1,&quot;NS 5倍&quot;,&quot;-&quot;)" data-time="30">Hydrocortisone
+(100mg/Vial)IVD</option><option value="R35" data-name="Diazepam
+(10 mg/2ml/Amp)" data-nicu="不稀釋 (5mg/mL)，IVP 0.4ml/min" data-E="-" data-D="=C35/5" data-F="-" data-H="-" data-J="=D35" data-G="-" data-I="-" data-time="0.4ml/min">Diazepam
+(10 mg/2ml/Amp)</option><option value="R36" data-name="Lorazepam
+(2mg/mL/Amp)" data-nicu="取實際dose，稀釋成5倍量  (濃度：1mL=0.4mg)給藥，建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C36/2" data-F="-" data-H="-" data-J="=D36*5" data-G="N/S 5倍" data-I="-" data-time="30">Lorazepam
+(2mg/mL/Amp)</option><option value="R37" data-name="Phenobarbital
+(100mg/mL/Amp)" data-nicu="取實際dose，稀釋成10倍量  (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C37/100" data-F="-" data-H="-" data-J="=D37*10" data-G="N/S 10倍" data-I="-" data-time="30">Phenobarbital
+(100mg/mL/Amp)</option><option value="R38" data-name="Levetiracetam
+(500mg/5mL/Vial)" data-nicu="取實際dose，稀釋成10倍量  (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C38/100" data-F="-" data-H="-" data-J="=D38*10" data-G="N/S 10倍" data-I="-" data-time="30">Levetiracetam
+(500mg/5mL/Vial)</option><option value="R39" data-name="Morphine 
+(10 mg/ml/Amp)" data-nicu="取實際dose，稀釋成20倍量  (濃度：1mL=0.5mg)給藥，IVD建議用1.5mL N/S drip 15 mins" data-E="-" data-D="=C39/10" data-F="-" data-H="-" data-J="=D39*20" data-G="N/S 20倍" data-I="-" data-time="30">Morphine 
+(10 mg/ml/Amp)</option><option value="R40" data-name="Fentanyl
+(0.05mg/mL) 2mL/Amp" data-nicu="取實際dose，稀釋成25倍量  (濃度：1mL=0.002mg)給藥，IVD建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C40/0.05" data-F="-" data-H="-" data-J="=D40*25" data-G="N/S 25倍" data-I="-" data-time="30">Fentanyl
+(0.05mg/mL) 2mL/Amp</option><option value="R41" data-name="Ketamine
+(500mg/10mL/Vial)" data-nicu="IVP：不稀釋，取實際dose, IVP&gt;1 min" data-E="-" data-D="=C41/50" data-F="-" data-H="-" data-J="=D41" data-G="-" data-I="-" data-time=" IVP&gt;1 min">Ketamine
+(500mg/10mL/Vial)</option><option value="R42" data-name="Pantoprazole
+(40mg/vial)" data-nicu="1vial加入10mL 注射用水 (1mL=4mg)，取實際dose，稀釋成5倍量 (1mL=0.8mg)，建議用1.5mL N/S drip 30 mins." data-E="10mL注射用水" data-D="-" data-F="=C42/4" data-H="-" data-J="=F42*5" data-G="N/S 5倍" data-I="-" data-time="30">Pantoprazole
+(40mg/vial)</option><option value="R43" data-name="Famotidine
+(20mg/2mL/Amp)" data-nicu="抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins" data-E="-" data-D="=IF(C43/10&lt;=0.1,&quot;抽0.1mL,dilute to 1mL&quot;,C43/10)" data-F="-" data-H="=IF(C43/10&lt;=0.1,C43/1,&quot;-&quot;)" data-J="=IF(C43/10&lt;=0.1,(C43/1)*5,(C43/10)*50)" data-G="=IF(C43/10&lt;=0.1,&quot;-&quot;,&quot;NS 50倍&quot;)" data-I="=IF(C43/10&lt;=0.1,&quot;NS 5倍&quot;,&quot;-&quot;)" data-time="30">Famotidine
+(20mg/2mL/Amp)</option><option value="R44" data-name="Metoclopramide
+(10mg/2mL/Amp)" data-nicu="不需稀釋，取實際dose，IVD建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C44/5" data-F="-" data-H="-" data-J="=D44" data-G="-" data-I="-" data-time="30">Metoclopramide
+(10mg/2mL/Amp)</option></select>
+
+<div class="field"><div class="label">NICU 泡製方式說明：</div><div id="nicuPrep" class="value">（選藥後顯示）</div></div>
+
+<div class="field"><div class="label">醫師開立劑量 (mg)：</div><input id="doseInput" type="number" step="0.001" placeholder="請輸入 mg" /></div>
+
+<div class="field"><div class="label">純藥液品項取藥量</div><div id="pureTake" class="value">--</div></div>
+<div class="field"><div class="label">1 vial 配置液與量</div><div id="vialConfig" class="value">--</div></div>
+<div class="field"><div class="label">配置後取藥量</div><div id="afterConfig" class="value">--</div></div>
+<div class="field"><div class="label">稀釋倍率</div><div id="diluteRatio" class="value">--</div></div>
+<div class="field"><div class="label">二次藥+液量</div><div id="secondMix" class="value">--</div></div>
+<div class="field"><div class="label">二次取藥劑量</div><div id="secondDose" class="value">--</div></div>
+<div class="field"><div class="label">再稀釋倍率</div><div id="againDilute" class="value">--</div></div>
+<div class="field"><div class="label">給藥前最終 mL 數</div><div id="finalML" class="result">--</div></div>
+<div class="field"><div class="label">給藥時間</div><div id="giveTime" class="value">--</div></div>
+
+<div class="btns"><button class="clear" onclick="clearAll()">清除</button><button class="copy" onclick="copyResult()">複製結果</button></div>
+<div class="small">數值皆四捨五入至小數點後 3 位。此頁面會忠實套用 Excel 裡的公式/文字。</div>
+</div><!--container-->
+
+<script>
+function fmt3(v){ if(v===null||v===undefined||isNaN(Number(v))) return '--'; return Number(Math.round(Number(v)*1000)/1000).toFixed(3); }
+function safeEval(expr){ if(!expr) return NaN; if(!/^[0-9+\-*/().<>=!\s]+$/.test(expr)) return NaN; try{return Function('return ('+expr+')')();}catch(e){return NaN;} }
+
+const sel = document.getElementById('drugSelect');
+const map = {};
+for(const o of sel.options){
+    if(!o.value) continue;
+    map[o.value] = {
+        name: o.getAttribute('data-name'),
+        nicu: o.getAttribute('data-nicu'),
+        E: o.getAttribute('data-E'),
+        D_raw: o.getAttribute('data-D'),
+        F_raw: o.getAttribute('data-F'),
+        H_raw: o.getAttribute('data-H'),
+        J_raw: o.getAttribute('data-J'),
+        G: o.getAttribute('data-G'),
+        I: o.getAttribute('data-I'),
+        time: o.getAttribute('data-time')
+    };
+}
+
+function clearAll(){ sel.value=''; document.getElementById('doseInput').value=''; updateDisplay(); }
+
+function copyResult(){
+    const name = sel.value? map[sel.value].name : '--';
+    const out = [
+        '藥品: '+name,
+        '醫師劑量: '+document.getElementById('doseInput').value,
+        '純藥液品項取藥量: '+document.getElementById('pureTake').innerText,
+        '1 vial 配置液與量: '+document.getElementById('vialConfig').innerText,
+        '配置後取藥量: '+document.getElementById('afterConfig').innerText,
+        '稀釋倍率: '+document.getElementById('diluteRatio').innerText,
+        '二次藥+液量: '+document.getElementById('secondMix').innerText,
+        '二次取藥劑量: '+document.getElementById('secondDose').innerText,
+        '再稀釋倍率: '+document.getElementById('againDilute').innerText,
+        '給藥前最終 mL: '+document.getElementById('finalML').innerText,
+        '給藥時間: '+document.getElementById('giveTime').innerText
+    ].join('\n');
+    navigator.clipboard.writeText(out);
+    alert('已複製結果');
+}
+
+function computeCell(raw, row, dose, deps){
+    if(!raw) return {disp:'--', num: NaN};
+    raw = raw.trim();
+    if(raw==='-') return {disp:'-', num: NaN};
+    if(raw.startsWith('=')){
+        let expr = raw.slice(1);
+        expr = expr.replace(new RegExp('C'+row,'ig'), String(dose));
+        // replace known dependencies with numeric values if provided
+        if(deps){
+            for(const k in deps){
+                expr = expr.replace(new RegExp(k+row,'ig'), String(deps[k]));
+            }
+        }
+        // handle simple IF
+        const ifm = expr.match(/^IF\s*\((.*?),(.*?),(.*)\)$/i);
+        if(ifm){
+            let cond = ifm[1], t = ifm[2], f = ifm[3];
+            cond = cond.replace(new RegExp('C'+row,'ig'), String(dose));
+            try{
+                const condEval = Function('return ('+cond+')')();
+                const chosen = condEval ? t : f;
+                const v = Function('return ('+chosen+')')();
+                return isNaN(v)? {disp:'--', num: NaN} : {disp: fmt3(v), num: Number(Number(Math.round(v*1000)/1000).toFixed(3))};
+            }catch(e){ return {disp:'--', num: NaN}; }
+        } else {
+            try{
+                const v = Function('return ('+expr+')')();
+                return isNaN(v)? {disp:'--', num: NaN} : {disp: fmt3(v), num: Number(Number(Math.round(v*1000)/1000).toFixed(3))};
+            }catch(e){ return {disp:'--', num: NaN}; }
+        }
+    } else {
+        const n = Number(raw);
+        if(!isNaN(n)) return {disp: fmt3(n), num: n};
+        return {disp: raw, num: NaN};
+    }
+}
+
+function updateDisplay(){
+    const key = sel.value;
+    const dose = parseFloat(document.getElementById('doseInput').value);
+    const nicu = document.getElementById('nicuPrep');
+    const pureTake = document.getElementById('pureTake');
+    const vialConfig = document.getElementById('vialConfig');
+    const afterConfig = document.getElementById('afterConfig');
+    const diluteRatio = document.getElementById('diluteRatio');
+    const secondMix = document.getElementById('secondMix');
+    const secondDose = document.getElementById('secondDose');
+    const againDilute = document.getElementById('againDilute');
+    const finalML = document.getElementById('finalML');
+    const giveTime = document.getElementById('giveTime');
+
+    if(!key){ clearAll(); return; }
+    const meta = map[key];
+    nicu.innerText = meta.nicu || '--';
+    vialConfig.innerText = (meta.E && meta.E.trim()!=='')? meta.E : '--';
+    diluteRatio.innerText = (meta.G && meta.G.trim()!=='')? meta.G : '--';
+    againDilute.innerText = (meta.I && meta.I.trim()!=='')? meta.I : '--';
+    giveTime.innerText = meta.time? (meta.time + ' 分鐘') : '--';
+
+    function showRaw(r){ if(!r||r.trim()==='') return '--'; if(r.trim()==='-') return '-'; if(r.trim().startsWith('=')) return '--'; return r.trim(); }
+
+    pureTake.innerText = showRaw(meta.D_raw);
+    afterConfig.innerText = showRaw(meta.F_raw);
+    secondMix.innerText = showRaw(meta.H_raw);
+    finalML.innerText = showRaw(meta.J_raw);
+
+    if(isNaN(dose) || dose<=0) return;
+
+    // Special-case names
+    if(meta.name && meta.name.toLowerCase().includes('hydrocortisone')){
+        const afterCfg = dose/50.0;
+        if(afterCfg <= 0.1){
+            afterConfig.innerText = '抽0.1mL,dilute to 1mL';
+            diluteRatio.innerText = '-';
+            secondMix.innerText = '-';
+            const s = dose/5.0;
+            secondDose.innerText = fmt3(s);
+            againDilute.innerText = 'NS 5倍';
+            finalML.innerText = fmt3(s*5);
+        } else {
+            afterConfig.innerText = fmt3(dose/50.0);
+            diluteRatio.innerText = 'NS 50倍';
+            secondMix.innerText = '-';
+            secondDose.innerText = '-';
+            againDilute.innerText = '-';
+            finalML.innerText = fmt3((dose/50.0)*50);
+        }
+        return;
+    }
+    if(meta.name && meta.name.toLowerCase().includes('famotidine')){
+        const pure = dose/10.0;
+        if(pure <= 0.1){
+            pureTake.innerText = '抽0.1mL,dilute to 1mL';
+            diluteRatio.innerText = '-';
+            secondMix.innerText = '-';
+            secondDose.innerText = fmt3(dose);
+            againDilute.innerText = 'NS 5倍';
+            finalML.innerText = fmt3(dose*5);
+            afterConfig.innerText = '-';
+        } else {
+            pureTake.innerText = fmt3(pure);
+            diluteRatio.innerText = 'NS 50倍';
+            secondMix.innerText = '-';
+            secondDose.innerText = '-';
+            againDilute.innerText = '-';
+            finalML.innerText = fmt3(pure*50);
+            afterConfig.innerText = '-';
+        }
+        return;
+    }
+
+    // Generic calculation using Excel formulas if present
+    const rowNum = key.slice(1);
+    const Dcomp = computeCell(meta.D_raw, rowNum, dose, {});
+    const Fcomp = computeCell(meta.F_raw, rowNum, dose, {D: Dcomp.num});
+    const Hcomp = computeCell(meta.H_raw, rowNum, dose, {D: Dcomp.num, F: Fcomp.num});
+    const Jcomp = computeCell(meta.J_raw, rowNum, dose, {D: Dcomp.num, F: Fcomp.num, H: Hcomp.num});
+
+    pureTake.innerText = Dcomp.disp || '--';
+    afterConfig.innerText = Fcomp.disp || '--';
+    secondMix.innerText = Hcomp.disp || '--';
+    finalML.innerText = Jcomp.disp ? (Jcomp.disp + ' mL') : '--';
+}
+
+sel.addEventListener('change', updateDisplay);
+document.getElementById('doseInput').addEventListener('input', updateDisplay);
+clearAll();
+</script>
+</body></html>
