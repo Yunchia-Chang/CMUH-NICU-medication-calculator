@@ -266,7 +266,29 @@ function updateDisplay(){
         }
         return;
     }
-
+  
+   if(meta.name && meta.name.toLowerCase().includes('dexamethasone')){
+    const pure = dose / 5.0; // 原液 5 mg/mL
+    if (pure <= 0.1){
+        // 當劑量太小時，需先稀釋成 0.5 mg/mL 再取劑量
+        pureTake.innerText = '抽0.1mL,dilute to 1mL'; 
+        diluteRatio.innerText = '-';
+        secondMix.innerText = '-';
+        secondDose.innerText = '-';
+        againDilute.innerText = '-';
+        finalML.innerText = fmt3((dose / 0.5) * 1);  // 計算給藥體積
+    } else {
+        // 一般劑量直接取用
+        pureTake.innerText = fmt3(pure);
+        diluteRatio.innerText = '-';
+        secondMix.innerText = '-';
+        secondDose.innerText = '-';
+        againDilute.innerText = '-';
+        finalML.innerText = fmt3(pure);
+    }
+    time.innerText = "30"; // 給藥時間固定 30 mins
+    return;
+    }
     // Generic calculation using Excel formulas if present
     const rowNum = key.slice(1);
     const Dcomp = computeCell(meta.D_raw, rowNum, dose, {});
