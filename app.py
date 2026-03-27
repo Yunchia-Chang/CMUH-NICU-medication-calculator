@@ -8,17 +8,17 @@ st.markdown("""
     /* 1. 整體背景：淡鵝黃色 */
     .stApp { background-color: #FFFDF0; }
     
-    /* 2. 強制所有標籤文字（包含 selectbox, number_input 標題）為純黑色 + 加粗 */
+    /* 2. 強制所有標籤文字為純黑色 + 加粗 */
     label, .label-text, [data-testid="stMarkdownContainer"] h1 { 
         color: #000000 !important; 
         font-weight: bold !important; 
         font-size: 1.15em !important;
     }
     
-    /* 3. 統一框框樣式 (適用於泡製說明與最終體積) */
+    /* 3. 統一框框樣式 (泡製說明與最終體積) */
     .info-box-style { 
         background-color: #FFFFFF; 
-        border-left: 6px solid #FFD700; /* 金色左邊框 */
+        border-left: 6px solid #FFD700; 
         padding: 15px; 
         margin-bottom: 20px; 
         border-radius: 4px; 
@@ -27,7 +27,7 @@ st.markdown("""
         font-size: 1.1em;
     }
 
-    /* 4. 最終體積數字顯示 (加大加粗) */
+    /* 4. 最終體積數字顯示 */
     .final-volume-text {
         font-size: 2.2em;
         font-weight: 800;
@@ -35,7 +35,7 @@ st.markdown("""
         color: #000000;
     }
     
-    /* 5. 數值顯示框樣式 (D, E, F, G, I, time) */
+    /* 5. 數值顯示框樣式 */
     .value-box { 
         padding: 12px; 
         background: #ffffff; 
@@ -63,7 +63,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 初始化 Session State (用於清除功能) ---
+# --- 初始化 Session State ---
 if 'dose_input' not in st.session_state:
     st.session_state.dose_input = 0.0
 if 'drug_choice' not in st.session_state:
@@ -76,7 +76,8 @@ def clear_fields():
 # 標題
 st.markdown("<h1>NICU 給藥計算機 (由 Excel 全藥品匯入)</h1>", unsafe_allow_html=True)
 
-# --- 核心資料庫 (44項藥品) ---
+# --- 核心資料庫 (完整 44 項藥品) ---
+# 格式: [泡製說明, E:配置液, D:純藥計算式, F:配置後取藥計算式, G:稀釋倍率, H:給藥路徑(未用), I:再稀釋倍率, J:最終體積計算式, time:時間]
 drug_data = {
     "Ampicillin (500mg/Vial)": ["1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins", "5mL 注射用水", "-", "dose/100", "-", "-", "-", "F", "30"],
     "Gentamicin (80mg/2mL/Vial)": ["取實際dose，稀釋成4倍量 (1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins", "-", "dose/40", "-", "N/S 4倍", "-", "-", "D*4", "60"],
@@ -117,24 +118,28 @@ drug_data = {
     "Ketamine (500mg/10mL/Vial)": ["IVP：不稀釋，取實際dose, IVP>1 min", "-", "dose/50", "-", "-", "-", "-", "D", "IVP>1 min"],
     "Pantoprazole (40mg/vial)": ["1vial加入10mL 注射用水 (1mL=4mg)，稀釋成5倍量 (1mL=0.8mg)", "10mL注射用水", "-", "dose/4", "N/S 5倍", "-", "-", "F*5", "30"],
     "Metoclopramide (10mg/2mL/Amp)": ["不需稀釋，取實際dose，建議用1.5mL N/S drip 30 mins", "-", "dose/5", "-", "-", "-", "-", "D", "30"],
+    "Hydrocortisone (100mg/Vial) IVP": ["IVP：1vial加入2mL N/S (1mL=50mg) 配置， 取實際dose", "2mL N/S", "-", "dose/50", "-", "-", "-", "F", ">30sec"],
     "Dexamethasone (5mg/mL/Amp)": "SPECIAL_DEX",
     "Hydrocortisone (100mg/Vial) IVD": "SPECIAL_HYDRO",
-    "Hydrocortisone (100mg/Vial) IVP": ["IVP：1vial加入2mL N/S (1mL=50mg) 配置， 取實際dose", "2mL N/S", "-", "dose/50", "-", "-", "-", "F", ">30sec"],
     "Famotidine (20mg/2mL/Amp)": "SPECIAL_FAMO"
 }
 
-# --- 藥品選擇與劑量輸入 (垂直佈置) ---
-selected_name = st.selectbox("💊 請選擇藥品項目:", ["-- 請選擇 --"] + list(drug_data.keys()), key="drug_choice")
+# --- 藥品選擇與清除按鈕 (同一行) ---
+c_select, c_button = st.columns([4, 1])
 
-# 清除按鈕
-st.button("🔄 清除重新計算", on_click=clear_fields)
+with c_select:
+    selected_name = st.selectbox("💊 請選擇藥品項目:", ["-- 請選擇 --"] + list(drug_data.keys()), key="drug_choice")
+
+with c_button:
+    st.write("<div style='padding-top: 32px;'></div>", unsafe_allow_html=True)
+    st.button("🔄 清除", on_click=clear_fields, use_container_width=True)
 
 if selected_name != "-- 請選擇 --":
     st.markdown("---")
-    # 醫師開立劑量 (標籤自動為黑色)
+    # 醫師開立劑量
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    # 計算邏輯區
+    # 計算核心邏輯
     res = {k: "--" for k in ["D", "E", "F", "G", "H", "I", "J", "time", "nicu"]}
     show_warning = False
 
@@ -180,34 +185,27 @@ if selected_name != "-- 請選擇 --":
             res["J"] = f"{eval(j_expr):.3f}"
             if res["I"] != "-": show_warning = True
 
-    # --- 顯示垂直結果欄位 ---
+    # --- 垂直結果顯示 ---
     if show_warning:
         st.markdown('<div class="warning-text">⚠️ 注意：此藥物劑量極小，請務必確認二次稀釋步驟！</div>', unsafe_allow_html=True)
 
-    # 1. 泡製說明
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 2. 各項數據 (垂直排開)
-    st.markdown('<p class="label-text">純藥液品項取藥量 (mL)</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["D"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('<p class="label-text">1 vial 配置液與量</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["E"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('<p class="label-text">配置後取藥量 (mL)</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["F"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('<p class="label-text">稀釋倍率</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["G"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('<p class="label-text">再稀釋倍率</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["I"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('<p class="label-text">建議給藥時間 (分鐘)</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["time"]}</div>', unsafe_allow_html=True)
+    # 依序排列所有欄位
+    display_fields = [
+        ("純藥液品項取藥量 (mL)", res["D"]),
+        ("1 vial 配置液與量", res["E"]),
+        ("配置後取藥量 (mL)", res["F"]),
+        ("稀釋倍率", res["G"]),
+        ("再稀釋倍率", res["I"]),
+        ("建議給藥時間 (分鐘)", res["time"])
+    ]
 
-    # 3. 最終結果 (與說明框同系列樣式)
+    for label, val in display_fields:
+        st.markdown(f'<p class="label-text">{label}</p>', unsafe_allow_html=True)
+        st.markdown(f'<div class="value-box">{val}</div>', unsafe_allow_html=True)
+
     st.markdown("---")
     st.markdown('<p class="label-text" style="text-align:center;">給藥前最終體積</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style"><div class="final-volume-text">{res["J"]} mL</div></div>', unsafe_allow_html=True)
