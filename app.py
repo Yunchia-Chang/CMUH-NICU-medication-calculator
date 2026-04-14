@@ -158,6 +158,7 @@ drug_data = {
     "Famotidine (20mg/2mL/Amp)": "SPECIAL_FAMO",
     "Dexamethasone (5mg/mL/Amp)": "SPECIAL_DEX",
     "Hydrocortisone (100mg/Vial) IVD": "SPECIAL_HYDRO"
+    "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
 }
 
 # --- 5. 藥品選擇與清除按鈕 (同一行) ---
