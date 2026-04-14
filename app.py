@@ -1,8 +1,7 @@
 import streamlit as st
 
-# --- 1. 設定網頁與 PWA Icon (使用高品質小藥丸圖示) ---
+# --- 1. 設定網頁與 PWA Icon ---
 APP_EMOJI = "💊"
-# 取得 💊 的 Unicode codepoint (1f48a) 並引用 Google Noto Emoji 高畫質圖片
 emoji_codepoint = hex(ord(APP_EMOJI))[2:] 
 EMOJI_SVC_URL = f"https://fonts.gstatic.com/s/e/notoemoji/latest/{emoji_codepoint}/512.webp"
 
@@ -12,7 +11,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# 注入 PWA 標籤，確保手機「加入主畫面」時抓到漂亮的藥丸圖示 (apple-touch-icon)
 st.markdown(f"""
     <head>
     <link rel="icon" sizes="192x192" href="{EMOJI_SVC_URL}">
@@ -22,39 +20,24 @@ st.markdown(f"""
     </head>
     """, unsafe_allow_html=True)
 
-# --- 2. 自定義 CSS 樣式區 (強化黑色文字設定) ---
+# --- 2. 自定義 CSS 樣式區 ---
 st.markdown("""
     <style>
-    /* 1. 整體背景：淡鵝黃色 */
     .stApp { background-color: #FFFDF0; }
-    
-    /* 2. 強制所有標準標籤、Markdown 文字、H1 標題為純黑色 + 加粗 */
     label, .label-text, [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] li { 
         color: #000000 !important; 
         font-weight: bold !important; 
     }
-    
-    /* 強制 H1 標題字體大小 */
-    [data-testid="stMarkdownContainer"] h1 {
-        font-size: 1.8em !important;
-    }
-
-    /* 強制標準標籤字體大小 */
-    label, .label-text {
-        font-size: 1.15em !important;
-    }
-    
-    /* 3. 特別針對 st.expander (可展開區塊) 的標題強制黑色與加粗 */
+    [data-testid="stMarkdownContainer"] h1 { font-size: 1.8em !important; }
+    label, .label-text { font-size: 1.15em !important; }
     .streamlit-expanderHeader, .streamlit-expanderHeader p {
         color: #000000 !important;
         font-weight: bold !important;
         font-size: 1.1em !important;
     }
-    
-    /* 4. 統一框框樣式 (泡製說明與最終體積) */
     .info-box-style { 
         background-color: #FFFFFF; 
-        border-left: 6px solid #FFD700; /* 金色左邊框 */
+        border-left: 6px solid #FFD700; 
         padding: 15px; 
         margin-bottom: 20px; 
         border-radius: 4px; 
@@ -62,16 +45,12 @@ st.markdown("""
         box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
         font-size: 1.1em;
     }
-
-    /* 5. 最終體積數字顯示 (加大加粗) */
     .final-volume-text {
         font-size: 2.2em;
         font-weight: 800;
         text-align: center;
         color: #000000;
     }
-    
-    /* 6. 數值顯示框樣式 (D, E, F, G, I, time) */
     .value-box { 
         padding: 12px; 
         background: #ffffff; 
@@ -83,8 +62,6 @@ st.markdown("""
         font-size: 1.1em; 
         color: #000000; 
     }
-    
-    /* 7. 警示文字樣式 (紅框黑字) */
     .warning-text { 
         color: #000000; 
         font-weight: bold; 
@@ -99,7 +76,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. 初始化 Session State (用於清除功能) ---
+# --- 3. 初始化 Session State ---
 if 'dose_input' not in st.session_state:
     st.session_state.dose_input = 0.0
 if 'drug_choice' not in st.session_state:
@@ -109,12 +86,11 @@ def clear_fields():
     st.session_state.dose_input = 0.0
     st.session_state.drug_choice = "-- 請選擇 --"
 
-# 標題 (使用 HTML 確保 CSS 可控)
-st.markdown("<h1>NICU 給藥計算機 (由 Excel 全藥品匯入)</h1>", unsafe_allow_html=True)
+st.markdown("<h1>NICU 給藥計算機</h1>", unsafe_allow_html=True)
 
-# --- 4. 核心資料庫 (完整 44 項藥品) ---
-# 格式: [泡製說明, E:配置液, D:純藥計算式, F:配置後取藥計算式, G:稀釋倍率, H:給藥路徑(未用), I:再稀釋倍率, J:最終體積計算式, time:時間]
+# --- 4. 核心資料庫 (已新增 Ceftaroline fosamil) ---
 drug_data = {
+    "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL 注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
     "Ampicillin (500mg/Vial)": ["1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins", "5mL 注射用水", "-", "dose/100", "-", "-", "-", "F", "30"],
     "Gentamicin (80mg/2mL/Vial)": ["取實際dose，稀釋成4倍量 (1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins", "-", "dose/40", "-", "N/S 4倍", "-", "-", "D*4", "60"],
     "CeFoTaxiMe (2g/Vial)": ["1vial加入10mL 注射用水 (1mL=200mg)，稀釋成5倍量 (1mL=40mg)，建議用1.5mL N/S drip 30 mins.", "10mL注射用水", "-", "dose/200", "D/W N/S 5倍", "-", "-", "F*5", "30"],
@@ -158,32 +134,24 @@ drug_data = {
     "Famotidine (20mg/2mL/Amp)": "SPECIAL_FAMO",
     "Dexamethasone (5mg/mL/Amp)": "SPECIAL_DEX",
     "Hydrocortisone (100mg/Vial) IVD": "SPECIAL_HYDRO"
-    "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
 }
 
-# --- 5. 藥品選擇與清除按鈕 (同一行) ---
-# 建立兩欄，第一欄較寬放選單，第二欄較窄放清除按鈕
+# --- 5. 藥品選擇與清除按鈕 ---
 c_select, c_button = st.columns([4, 1])
-
 with c_select:
-    # 這裡加上了 💊 圖示
-    selected_name = st.selectbox("💊 請選擇藥品項目:", ["-- 請選擇 --"] + list(drug_data.keys()), key="drug_choice")
+    selected_name = st.selectbox("💊 請選擇藥品項目:", ["-- 請選擇 --"] + sorted(list(drug_data.keys())), key="drug_choice")
 
 with c_button:
-    # 增加一個空白區塊讓按鈕對齊選單標題下方
     st.write("<div style='padding-top: 32px;'></div>", unsafe_allow_html=True)
     st.button("🔄 清除", on_click=clear_fields, use_container_width=True)
 
 if selected_name != "-- 請選擇 --":
     st.markdown("---")
-    # 醫師開立劑量 (標籤自動為黑色)
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    # 計算核心邏輯
     res = {k: "--" for k in ["D", "E", "F", "G", "H", "I", "J", "time", "nicu"]}
     show_warning = False
 
-    # 特殊藥品邏輯
     if drug_data[selected_name] == "SPECIAL_HYDRO":
         res["nicu"] = "1vial加入2mL N/S(1mL=50mg)，若取藥<=0.1mL，稀釋成1mL(5mg/mL)再取藥，並稀釋5倍"
         res["E"] = "2mL N/S"
@@ -215,11 +183,9 @@ if selected_name != "-- 請選擇 --":
                 res.update({"D": f"{dose/5.0:.3f}", "J": f"{dose/5.0:.3f}"})
         res["time"] = "30"
     else:
-        # 一般藥品邏輯
         d = drug_data[selected_name]
         res["nicu"], res["E"], res["G"], res["I"], res["time"] = d[0], d[1], d[4], d[6], d[8]
         if dose > 0:
-            # 數值計算
             d_val = eval(d[2].replace("dose", str(dose))) if d[2] != "-" else 0
             f_val = eval(d[3].replace("dose", str(dose))) if d[3] != "-" else 0
             res["D"] = f"{d_val:.3f}" if d[2] != "-" else "-"
@@ -228,15 +194,12 @@ if selected_name != "-- 請選擇 --":
             res["J"] = f"{eval(j_expr):.3f}"
             if res["I"] != "-": show_warning = True
 
-    # --- 6. 垂直結果顯示 ---
     if show_warning:
         st.markdown('<div class="warning-text">⚠️ 注意：此藥物劑量極小，請務必確認二次稀釋步驟！</div>', unsafe_allow_html=True)
 
-    # 1. 泡製說明
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 2. 各項數據 (垂直排開)
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
@@ -250,16 +213,12 @@ if selected_name != "-- 請選擇 --":
         st.markdown(f'<p class="label-text">{label}</p>', unsafe_allow_html=True)
         st.markdown(f'<div class="value-box">{val}</div>', unsafe_allow_html=True)
 
-    # 3. 最終結果 (與說明框同系列樣式)
     st.markdown("---")
     st.markdown('<p class="label-text" style="text-align:center;">給藥前最終體積</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style"><div class="final-volume-text">{res["J"]} mL</div></div>', unsafe_allow_html=True)
 
-    # --- 7. 分享與安裝教學 (強化黑色文字設定) ---
     st.markdown("---")
-    # 標題強制黑色與加粗已在 CSS 的 streamlit-expanderHeader 設定
     with st.expander("📲 如何將計算機加入手機桌面？"):
-        # 內文強制黑色與加粗已在 CSS 的 stMarkdownContainer p/li 設定
         st.markdown("""
         **iPhone (Safari):**
         1. 打開本網頁，點擊底部的「分享」按鈕 (方框向上箭頭)。
@@ -269,10 +228,12 @@ if selected_name != "-- 請選擇 --":
         1. 打開本網頁，點擊右上角「三個小點 (⋮)」。
         2. 選擇「安裝應用程式」或「加到主螢幕」。
         
-        *完成後，你的桌面上會出現一個 💊 小藥丸專屬圖示，點開即可直接使用，就像原生 App 一樣專業！*
+        *完成後，你的桌面上會出現一個 💊 小藥丸專屬圖示！*
         """)
-
 else:
+    st.info("👋 請由下拉選單選擇藥品項目開始。")
+
+st.markdown('<p style="color:gray; font-size:0.8em; text-align:center; margin-top:50px;">智慧搖籃專案 | 數值四捨五入至千分位 | 技術支援: NICU 臨床藥師</p>', unsafe_allow_html=True)
     # 初始狀態提示 (標籤自動為黑色)
     st.info("👋 請由下拉選單選擇藥品項目開始。")
 
