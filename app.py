@@ -234,8 +234,3 @@ else:
     st.info("👋 請由下拉選單選擇藥品項目開始。")
 
 st.markdown('<p style="color:gray; font-size:0.8em; text-align:center; margin-top:50px;">智慧搖籃專案 | 數值四捨五入至千分位 | 技術支援: NICU 臨床藥師</p>', unsafe_allow_html=True)
-    # 初始狀態提示 (標籤自動為黑色)
-    st.info("👋 請由下拉選單選擇藥品項目開始。")
-
-# 頁尾 footer
-st.markdown('<p style="color:gray; font-size:0.8em; text-align:center; margin-top:50px;">智慧搖籃專案 | 數值四捨五入至千分位 | 技術支援: NICU 臨床藥師</p>', unsafe_allow_html=True)
