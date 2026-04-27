@@ -88,8 +88,9 @@ def clear_fields():
 
 st.markdown("<h1>NICU 給藥計算機</h1>", unsafe_allow_html=True)
 
-# --- 4. 核心資料庫 (已新增 Ceftaroline fosamil) ---
+# --- 4. 核心資料庫 (已新增 Ceftaroline 與 Methylprednisolone) ---
 drug_data = {
+    "Methylprednisolone (40 mg/Vial)": ["1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins.", "1mL 注射用水", "-", "dose/40", "N/S 8倍", "-", "-", "F*8", "30"],
     "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL 注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
     "Ampicillin (500mg/Vial)": ["1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins", "5mL 注射用水", "-", "dose/100", "-", "-", "-", "F", "30"],
     "Gentamicin (80mg/2mL/Vial)": ["取實際dose，稀釋成4倍量 (1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins", "-", "dose/40", "-", "N/S 4倍", "-", "-", "D*4", "60"],
@@ -139,6 +140,7 @@ drug_data = {
 # --- 5. 藥品選擇與清除按鈕 ---
 c_select, c_button = st.columns([4, 1])
 with c_select:
+    # 這裡使用 sorted 讓藥品按英文字母排序，方便尋找
     selected_name = st.selectbox("💊 請選擇藥品項目:", ["-- 請選擇 --"] + sorted(list(drug_data.keys())), key="drug_choice")
 
 with c_button:
