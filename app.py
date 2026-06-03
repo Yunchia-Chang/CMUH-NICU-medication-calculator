@@ -15,7 +15,7 @@ st.markdown(f"""
     <head>
     <link rel="icon" sizes="192x192" href="{EMOJI_SVC_URL}">
     <link rel="icon" sizes="512x512" href="{EMOJI_SVC_URL}">
-    <link rel="apple-touch-icon" href="{EMOJI_SVC_URL}">
+    <link rel="apple-touch-icon" href="{EMORL_SVC_URL}">
     <meta name="msapplication-TileImage" content="{EMOJI_SVC_URL}">
     </head>
     """, unsafe_allow_html=True)
@@ -90,7 +90,6 @@ st.markdown("<h1>NICU 給藥計算機</h1>", unsafe_allow_html=True)
 
 # --- 4. 核心資料庫 ---
 drug_data = {
-    "Methylprednisolone (40 mg/Vial)": ["1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins.", "1mL 注射用水", "-", "dose/40", "N/S 8倍", "-", "-", "F*8", "30"],
     "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL 注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
     "Ampicillin (500mg/Vial)": ["1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins", "5mL 注射用水", "-", "dose/100", "-", "-", "-", "F", "30"],
     "Gentamicin (80mg/2mL/Vial)": ["取實際dose，稀釋成4倍量 (1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins", "-", "dose/40", "-", "N/S 4倍", "-", "-", "D*4", "60"],
@@ -113,7 +112,7 @@ drug_data = {
     "Amphotericin B (50mg/Vial)": ["1vial加入10mL 注射用水(1mL=5mg)，取實際dose，以D5W稀釋成50倍量 (1ml=0.1mg)，不足1mL者加到1mL，建議用1.5 mL D5W drip 120-360min ", "10mL注射用水", "-", "dose/5", "D5W 50倍", "-", "-", "F*50", "120-360"],
     "Liposomal Amphotericin B 50 mg/Vial": ["1 vial 加入 12 mL 無菌注射用水 (1ml=4mg) 配置，取實際dose，以D5W稀釋成4倍量 (1ml=1mg) ，建議用1.5 mL D5W drip 120 mins", "12mL注射用水", "-", "dose/4", "D5W 4倍", "-", "-", "F*4", "120"],
     "Micafungin 50mg/Vial": ["1vial加入5 mL NS or D5W配製後(勿劇烈振搖)(1mL=10mg)，取實際dose，稀釋成10倍量(1mL=1mg)，建議用1.5 mL N/S drip 60min", "5mL N/S D5W", "-", "dose/10", "D/W N/S 10倍", "-", "-", "F*10", "60"],
-    "Acyclovir (250 mg/Vial)": ["1vial加入10mL N/S(1mL=25mg)，取實際dose，以N/S釋成5倍量 (1ml=5mg)，不足1mL者加到1mL，建議用1.5 mL N/S drip 60min ", "10mL N/S", "-", "dose/25", "N/S 5倍", "-", "-", "F*5", "60"],
+    "Acyclovir (250 mg/Vial)": ["1vial加入10mL N/S(1mL=25mg)，取實際dose，以N/S稀釋成5倍量 (1ml=5mg)，不足1mL者加到1mL，建議用1.5 mL N/S drip 60min ", "10mL N/S", "-", "dose/25", "N/S 5倍", "-", "-", "F*5", "60"],
     "Ganciclovir (500mg/Vial)": ["1vial加入10mL 注射用水 (1mL=50mg) 配置，取實際dose，以N/S稀釋成5倍量 (1ml=10mg)，不足1mL者加到1mL，建議用1.5 mL N/S drip 60min ", "10mL注射用水", "-", "dose/50", "N/S 5倍", "-", "-", "F*5", "60"],
     "Calcium gluconate (1000mg/10mL)": ["抽實際dose (1mL=100mg)，稀釋成2倍量 (1ml=50mg) 給予，建議用1.5 mL N/S drip 30mins", "-", "dose/100", "-", "D5W N/S 2倍", "-", "-", "D*2", "30"],
     "Furosemide (20mg/2mL/Amp)": ["不需稀釋(=10mg/mL) 取實際dose，建議用1.5mL N/S drip 15 mins", "-", "dose/10", "-", "-", "-", "-", "D", "15"],
@@ -134,7 +133,8 @@ drug_data = {
     "Hydrocortisone (100mg/Vial) IVP": ["1vial加入2mL N/S (1mL=50mg) 配置， 取實際dose, IVP>30 sec", "2mL N/S", "-", "dose/50", "-", "-", "-", "F", ">30sec"],
     "Famotidine (20mg/2mL/Amp)": "SPECIAL_FAMO",
     "Dexamethasone (5mg/mL/Amp)": "SPECIAL_DEX",
-    "Hydrocortisone (100mg/Vial) IVD": "SPECIAL_HYDRO"
+    "Hydrocortisone (100mg/Vial) IVD": "SPECIAL_HYDRO",
+    "Methylprednisolone (40 mg/Vial)": "SPECIAL_METHYL"
 }
 
 # --- 5. 藥品選擇與清除按鈕 ---
@@ -150,50 +150,117 @@ if selected_name != "-- 請選擇 --":
     st.markdown("---")
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    # 初始化回應欄位，特別新增 "F2" 代表二次取藥劑量
     res = {k: "--" for k in ["D", "E", "F", "F2", "G", "H", "I", "J", "time", "nicu"]}
     show_warning = False
 
-    # --- 特殊藥品邏輯分支 ---
+    # --- 特殊藥物邏輯處理 ---
     if drug_data[selected_name] == "SPECIAL_HYDRO":
-        # 泡製說明文字完全固定，完全不因劑量改變而變更
-        res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
         res["E"] = "2mL N/S"
-        if dose > 0:
-            res.update({
-                "F": "抽0.1mL, dilute to 1mL",
-                "G": "-",
-                "I": "NS 5倍",
-                "F2": f"{dose/5.0:.3f}",   # 精準算出二次取藥量 (mg 數除以 5mg/mL)
-                "J": f"{(dose/5.0)*5:.3f}" # 最終體積
-            })
-            show_warning = True
         res["time"] = "30"
+        res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
+        if dose > 0:
+            if (dose / 50.0) <= 0.1:
+                res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "F": "抽0.1mL, dilute to 1mL",
+                    "G": "-",
+                    "I": "NS 5倍",
+                    "F2": f"{dose/5.0:.3f}",
+                    "J": f"{(dose/5.0)*5:.3f}"
+                })
+                show_warning = True
+            else:
+                res["nicu"] = "1vial加入2mL N/S (1mL=50mg) 配置，取實際dose，再稀釋50倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "F": f"{dose/50.0:.3f}",
+                    "G": "NS 50倍",
+                    "I": "-",
+                    "F2": "-",
+                    "J": f"{(dose/50.0)*50:.3f}"
+                })
         
     elif drug_data[selected_name] == "SPECIAL_FAMO":
-        res["nicu"] = "抽0.1mL(10mg)稀釋成1mL(1mg)再取，或直接取10mg/mL後稀釋50倍"
         res["E"] = "-"
+        res["time"] = "30"
+        # 預設文字
+        res["nicu"] = "抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins"
+        
         if dose > 0:
-            if (dose/10.0) <= 0.1:
-                res.update({"D": "抽0.1mL, dilute to 1mL", "G": "-", "I": "NS 5倍", "F2": f"{dose:.3f}", "J": f"{dose*5:.3f}"})
+            if (dose / 10.0) <= 0.1:
+                # 劑量性質 1：劑量太小需要二次稀釋 (Dose <= 1.0 mg)
+                res["nicu"] = "抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins"
+                res.update({
+                    "D": "抽0.1mL, dilute to 1mL",
+                    "G": "-",
+                    "I": "NS 5倍",
+                    "F2": f"{dose:.3f}",
+                    "J": f"{dose*5:.3f}"
+                })
                 show_warning = True
             else:
-                res.update({"D": f"{dose/10.0:.3f}", "G": "NS 50倍", "I": "-", "J": f"{(dose/10.0)*50:.3f}"})
-        res["time"] = "30"
+                # 劑量性質 2：劑量夠大不需二次配置 (Dose > 1.0 mg) -> 文字自動跳動修改！
+                res["nicu"] = "抽實際dose(1mL=10mg)，再稀釋50倍量 (1mL=0.2mg)，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "D": f"{dose/10.0:.3f}",
+                    "G": "NS 50倍",
+                    "I": "-",
+                    "F2": "-",
+                    "J": f"{(dose/10.0)*50:.3f}"
+                })
         
     elif drug_data[selected_name] == "SPECIAL_DEX":
-        res["nicu"] = "不需稀釋(5mg/mL)；若劑量<=0.1mL，稀釋成1mL(0.5mg/mL)再取藥"
         res["E"] = "-"
+        res["time"] = "30"
+        res["nicu"] = "抽0.1mL (1mL=5mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
         if dose > 0:
-            if (dose/5.0) <= 0.1:
-                res.update({"D": "抽0.1mL, dilute to 1mL", "I": "稀釋至1mL", "F2": f"{(dose/0.5):.3f}", "J": f"{(dose/0.5):.3f}"})
+            if (dose / 5.0) <= 0.1:
+                res["nicu"] = "抽0.1mL (1mL=5mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "D": "抽0.1mL, dilute to 1mL",
+                    "G": "-",
+                    "I": "稀釋至1mL",
+                    "F2": f"{(dose/0.5):.3f}",
+                    "J": f"{(dose/0.5):.3f}"
+                })
                 show_warning = True
             else:
-                res.update({"D": f"{dose/5.0:.3f}", "J": f"{dose/5.0:.3f}"})
+                res["nicu"] = "不需稀釋(=5mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "D": f"{dose/5.0:.3f}",
+                    "G": "-",
+                    "I": "-",
+                    "F2": "-",
+                    "J": f"{dose/5.0:.3f}"
+                })
+
+    elif drug_data[selected_name] == "SPECIAL_METHYL":
         res["time"] = "30"
+        res["nicu"] = "抽0.1mL (1mL=4mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+        if dose > 0:
+            if (dose / 40.0) <= 0.1:
+                res["nicu"] = "抽0.1mL (1mL=4mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+                res.update({
+                    "E": "1mL 注射用水",
+                    "F": "抽0.1mL, dilute to 1mL",
+                    "G": "-",
+                    "I": "稀釋至1mL",
+                    "F2": f"{(dose/0.5):.3f}",
+                    "J": f"{(dose/0.5):.3f}"
+                })
+                show_warning = True
+            else:
+                res["nicu"] = "1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins."
+                res.update({
+                    "E": "1mL 注射用水",
+                    "F": f"{dose/40.0:.3f}",
+                    "G": "N/S 8倍",
+                    "I": "-",
+                    "F2": "-",
+                    "J": f"{(dose/40.0)*8:.3f}"
+                })
         
     else:
-        # --- 一般藥品常規運算 ---
+        # --- 一般藥物常規運算 ---
         d = drug_data[selected_name]
         res["nicu"], res["E"], res["G"], res["I"], res["time"] = d[0], d[1], d[4], d[6], d[8]
         if dose > 0:
@@ -212,7 +279,6 @@ if selected_name != "-- 請選擇 --":
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 這裡將「二次取藥劑量 (mL)」正式打包進顯示流程
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
