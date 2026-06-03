@@ -11,11 +11,12 @@ st.set_page_config(
     layout="centered"
 )
 
+# 修正處：將原本拼錯的 EMORL_SVC_URL 導正回 EMOJI_SVC_URL
 st.markdown(f"""
     <head>
     <link rel="icon" sizes="192x192" href="{EMOJI_SVC_URL}">
     <link rel="icon" sizes="512x512" href="{EMOJI_SVC_URL}">
-    <link rel="apple-touch-icon" href="{EMORL_SVC_URL}">
+    <link rel="apple-touch-icon" href="{EMOJI_SVC_URL}">
     <meta name="msapplication-TileImage" content="{EMOJI_SVC_URL}">
     </head>
     """, unsafe_allow_html=True)
@@ -150,14 +151,14 @@ if selected_name != "-- 請選擇 --":
     st.markdown("---")
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    res = {k: "--" for k in ["D", "E", "F", "F2", "G", "H", "I", "J", "time", "nicu"]}
+    # 預設清單，包含配合新欄位的初始化
+    res = {k: "--" for k in ["D", "E", "F", "F2", "G", "I", "J", "time", "nicu", "H"]}
     show_warning = False
 
     # --- 特殊藥物邏輯處理 ---
     if drug_data[selected_name] == "SPECIAL_HYDRO":
         res["E"] = "2mL N/S"
         res["time"] = "30"
-        res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
         if dose > 0:
             if (dose / 50.0) <= 0.1:
                 res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
@@ -178,19 +179,18 @@ if selected_name != "-- 請選擇 --":
                     "F2": "-",
                     "J": f"{(dose/50.0)*50:.3f}"
                 })
+        else:
+            res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
         
     elif drug_data[selected_name] == "SPECIAL_FAMO":
         res["E"] = "-"
         res["time"] = "30"
-        # 預設文字
         res["nicu"] = "抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins"
-        
         if dose > 0:
             if (dose / 10.0) <= 0.1:
-                # 劑量性質 1：劑量太小需要二次稀釋 (Dose <= 1.0 mg)
                 res["nicu"] = "抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins"
                 res.update({
-                    "D": "抽0.1mL, dilute to 1mL",
+                    "F": "抽0.1mL, dilute to 1mL",
                     "G": "-",
                     "I": "NS 5倍",
                     "F2": f"{dose:.3f}",
@@ -198,7 +198,6 @@ if selected_name != "-- 請選擇 --":
                 })
                 show_warning = True
             else:
-                # 劑量性質 2：劑量夠大不需二次配置 (Dose > 1.0 mg) -> 文字自動跳動修改！
                 res["nicu"] = "抽實際dose(1mL=10mg)，再稀釋50倍量 (1mL=0.2mg)，建議用1.5mL N/S drip 30 mins"
                 res.update({
                     "D": f"{dose/10.0:.3f}",
@@ -279,12 +278,14 @@ if selected_name != "-- 請選擇 --":
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
+    # 按照您的設計畫面排版：加入「二次藥液量(H)」與「二次取藥劑量」相關欄位
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
         ("配置後取藥量 (mL)", res["F"]),
-        ("二次取藥劑量 (mL)", res["F2"]),
         ("稀釋倍率", res["G"]),
+        ("二次藥液量 (mL)", res["H"]),
+        ("二次取藥劑量 (mL)", res["F2"]),
         ("再稀釋倍率", res["I"]),
         ("建議給藥時間 (分鐘)", res["time"])
     ]
@@ -294,7 +295,7 @@ if selected_name != "-- 請選擇 --":
         st.markdown(f'<div class="value-box">{val}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown('<p class="label-text" style="text-align:center;">給藥前最終體積</p>', unsafe_allow_html=True)
+    st.markdown('<p class="label-text" style="text-align:center;">給藥前最終體積 (mL 數)</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style"><div class="final-volume-text">{res["J"]} mL</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
