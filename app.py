@@ -221,7 +221,7 @@ if selected_name != "-- 請選擇 --":
                 })
                 show_warning = True
             else:
-                res["nicu"] = "不需釋(=5mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins"
+                res["nicu"] = "不需稀釋(=5mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins"
                 res.update({
                     "D": f"{dose/5.0:.3f}",
                     "G": "-",
@@ -233,23 +233,23 @@ if selected_name != "-- 請選擇 --":
     elif drug_data[selected_name] == "SPECIAL_METHYL":
         res["E"] = "1mL 注射用水"
         res["time"] = "30"
-        # 修正處：預設文字與二次稀釋的分支文字同步加上 1vial 配置說明
         res["nicu"] = "1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
         
         if dose > 0:
             if (dose / 40.0) <= 0.1:
-                # 情況 2：劑量太小需要二次稀釋 (Dose <= 4.0 mg)
+                # 情況 2：二次稀釋 (Dose <= 4.0 mg)
                 res["nicu"] = "1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+                # 修正：直接抽取實際劑量，不再顯示「再稀釋倍率」與「二次藥液量」，最終體積就是取藥量
                 res.update({
                     "F": "抽0.1mL, dilute to 1mL",
                     "G": "-",
-                    "I": "稀釋至1mL",
+                    "I": "-",
                     "F2": f"{(dose/0.4):.3f}",
-                    "J": f"{(dose/0.4):.3f}"
+                    "J": f"{(dose/0.4):.3f}" 
                 })
                 show_warning = True
             else:
-                # 情況 1：劑量夠大 (Dose > 4.0 mg) -> 直接稀釋 8 倍
+                # 情況 1：直接稀釋 8 倍 (Dose > 4.0 mg)
                 res["nicu"] = "1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins."
                 res.update({
                     "F": f"{dose/40.0:.3f}",
