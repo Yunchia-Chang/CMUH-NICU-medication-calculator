@@ -11,7 +11,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# 修正處：將原本拼錯的 EMORL_SVC_URL 導正回 EMOJI_SVC_URL
 st.markdown(f"""
     <head>
     <link rel="icon" sizes="192x192" href="{EMOJI_SVC_URL}">
@@ -151,7 +150,6 @@ if selected_name != "-- 請選擇 --":
     st.markdown("---")
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    # 預設清單，包含配合新欄位的初始化
     res = {k: "--" for k in ["D", "E", "F", "F2", "G", "I", "J", "time", "nicu", "H"]}
     show_warning = False
 
@@ -233,24 +231,27 @@ if selected_name != "-- 請選擇 --":
                 })
 
     elif drug_data[selected_name] == "SPECIAL_METHYL":
+        res["E"] = "1mL 注射用水"
         res["time"] = "30"
-        res["nicu"] = "抽0.1mL (1mL=4mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+        # 預設顯示文字
+        res["nicu"] = "抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+        
         if dose > 0:
             if (dose / 40.0) <= 0.1:
-                res["nicu"] = "抽0.1mL (1mL=4mg)，稀釋成1mL (1mL=0.5mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
+                # 情況 2：劑量太小需要二次稀釋 (Dose <= 4.0 mg)
+                res["nicu"] = "抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins"
                 res.update({
-                    "E": "1mL 注射用水",
                     "F": "抽0.1mL, dilute to 1mL",
                     "G": "-",
                     "I": "稀釋至1mL",
-                    "F2": f"{(dose/0.5):.3f}",
-                    "J": f"{(dose/0.5):.3f}"
+                    "F2": f"{(dose/0.4):.3f}", # 依據 1mL=0.4mg 計算二次取藥量
+                    "J": f"{(dose/0.4):.3f}"
                 })
                 show_warning = True
             else:
+                # 情況 1：劑量夠大 (Dose > 4.0 mg) -> 直接稀釋 8 倍
                 res["nicu"] = "1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins."
                 res.update({
-                    "E": "1mL 注射用水",
                     "F": f"{dose/40.0:.3f}",
                     "G": "N/S 8倍",
                     "I": "-",
@@ -278,7 +279,6 @@ if selected_name != "-- 請選擇 --":
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 按照您的設計畫面排版：加入「二次藥液量(H)」與「二次取藥劑量」相關欄位
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
