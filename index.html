@@ -75,7 +75,7 @@ button.copy{background:#ffd84d}
 <option value="R43" data-name="Famotidine (20mg/2mL/Amp)" data-nicu="抽0.1mL (1mL=10mg)，稀釋成1mL (1mL=1mg)，抽實際dose，再稀釋5倍量 (1mL=0.2mg)，建議用1.5 mL N/S drip 30mins" data-E="-" data-D="-" data-F="-" data-H="-" data-J="-" data-G="-" data-I="-" data-time="30">Famotidine (20mg/2mL/Amp)</option>
 <option value="R44" data-name="Metoclopramide (10mg/2mL/Amp)" data-nicu="不需稀釋，取實際dose，IVD建議用1.5mL N/S drip 30 mins" data-E="-" data-D="=C44/5" data-F="-" data-H="-" data-J="=D44" data-G="-" data-I="-" data-time="30">Metoclopramide (10mg/2mL/Amp)</option>
 <option value="R45" data-name="Ceftaroline fosamil  (600mg/Vial)" data-nicu="1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成2.5倍量 (1ml=12mg) ,建議用1.5 mL N/S drip 60mins" data-E="20mL注射用水" data-D="-" data-F="=C45/30" data-H="-" data-J="=F45*2.5" data-G="N/S 2.5倍" data-I="-" data-time="60">Ceftaroline fosamil  (600mg/Vial)</option>
-<option value="R46" data-name="Methylprednisolone (40 mg/Vial)" data-nicu="1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins" data-E="1mL注射用水" data-D="-" data-F="-" data-H="-" data-J="-" data-G="-" data-I="-" data-time="30">Methylprednisolone (40 mg/Vial)</option>
+<option value="R46" data-name="Methylprednisolone (40 mg/Vial)" data-nicu="1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins" data-E="1mL注射用水" data-D="-" data-F="-" data-H="-" data-J="-" data-G="-" data-I="-" data-time="30">Methylprednisolone (40 mg/Vial)</option>
 </select>
 
 <div id="alertBox" class="warning-box">⚠️ 注意：此藥物劑量極小，請務必確認二次稀釋步驟！</div>
@@ -277,7 +277,7 @@ function updateDisplay(){
         return;
     }
   
-    // 3. Dexamethasone —— 修正：移除了不再需要的「再稀釋倍率」字眼，最終體積直接等於二次抽取體積
+    // 3. Dexamethasone
     if(nameLower.includes('dexamethasone')){
         const pure = dose / 5.0;
         if (pure <= 0.1){
@@ -288,8 +288,8 @@ function updateDisplay(){
             
             const secDose = dose / 0.5;
             secondDose.innerText = fmt3(secDose);
-            againDilute.innerText = '-'; // 確定改為不需要顯示
-            finalML.innerText = fmt3(secDose) + ' mL'; // 最終體積直接對齊取藥量
+            againDilute.innerText = '-';
+            finalML.innerText = fmt3(secDose) + ' mL';
             alertBox.style.display = 'block';
         } else {
             nicu.innerText = "不需稀釋(=5mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins";
@@ -304,19 +304,19 @@ function updateDisplay(){
         return;
     }
 
-    // 4. Methylprednisolone (40 mg/Vial) —— 修正：同理全面移除不需要的「再稀釋倍率」字眼與錯誤相乘
+    // 4. Methylprednisolone (40 mg/Vial) —— 精準更新：除數修正為 4
     if(nameLower.includes('methylprednisolone')){
         const baseVol = dose / 40.0;
         if (baseVol <= 0.1) {
-            nicu.innerText = "1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=0.4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins";
+            nicu.innerText = "1vial加入1mL 注射用水 (1mL=40mg)，抽0.1mL (1mL=40mg)，稀釋成1mL (1mL=4mg)，抽實際dose，建議用1.5mL N/S drip 30 mins";
             afterConfig.innerText = '抽0.1mL, dilute to 1mL';
             diluteRatio.innerText = '-';
             secondMix.innerText = '-';
             
-            const secDose = dose / 0.4;
+            const secDose = dose / 4.0; // 將除數導正回正確的 4
             secondDose.innerText = fmt3(secDose);
-            againDilute.innerText = '-'; // 確定改為不需要顯示
-            finalML.innerText = fmt3(secDose) + ' mL'; // 最終體積直接對齊取藥量
+            againDilute.innerText = '-'; 
+            finalML.innerText = fmt3(secDose) + ' mL'; 
             alertBox.style.display = 'block';
         } else {
             nicu.innerText = "1vial加入1mL 注射用水 (1mL=40mg)，取實際dose，稀釋成8倍量 (1mL=5mg)，建議用1.5mL N/S drip 30 mins.";
