@@ -150,7 +150,7 @@ if selected_name != "-- 請選擇 --":
     st.markdown("---")
     dose = st.number_input("💉 醫師開立劑量 (mg):", min_value=0.0, step=0.001, format="%.3f", key="dose_input")
     
-    res = {k: "--" for k in ["D", "E", "F", "F2", "G", "I", "J", "time", "nicu", "H"]}
+    res = {k: "-" for k in ["D", "E", "F", "F2", "G", "I", "J", "time", "nicu", "H"]}
     show_warning = False
 
     # --- 特殊藥物邏輯處理 ---
@@ -170,7 +170,7 @@ if selected_name != "-- 請選擇 --":
                     "F": f"{dose/50.0:.3f}", "G": "NS 50倍", "I": "-", "F2": "-", "J": f"{(dose/50.0)*50:.3f}"
                 })
         else:
-            res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再稀釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
+            res["nicu"] = "IVD：1vial加入2mL N/S (1mL=50mg) 配置，先抽0.1mL，稀釋成1mL(1mL=5mg)，取實際dose，再釋5倍(1mL=1mg)，建議用1.5mL N/S drip 30 mins"
         
     elif drug_data[selected_name] == "SPECIAL_FAMO":
         res["E"] = "-"
@@ -240,29 +240,21 @@ if selected_name != "-- 請選擇 --":
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 核心修正：動態決定要顯示哪些欄位
+    # 所有欄位皆固定顯示，包含「再稀釋倍率」
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
         ("配置後取藥量 (mL)", res["F"]),
         ("稀釋倍率", res["G"]),
         ("二次藥液量 (mL)", res["H"]),
-        ("二次取藥劑量 (mL)", res["F2"])
+        ("二次取藥劑量 (mL)", res["F2"]),
+        ("再稀釋倍率", res["I"]),
+        ("建議給藥時間 (分鐘)", res["time"])
     ]
 
-    # 常規固定欄位顯示
     for label, val in display_fields:
         st.markdown(f'<p class="label-text">{label}</p>', unsafe_allow_html=True)
         st.markdown(f'<div class="value-box">{val}</div>', unsafe_allow_html=True)
-
-    # 關鍵修正處：只有在「再稀釋倍率」不是 "-" 的時候，才渲染此白框（達到跟網頁完全相同的效果）
-    if res["I"] != "-":
-        st.markdown('<p class="label-text">再稀釋倍率</p>', unsafe_allow_html=True)
-        st.markdown(f'<div class="value-box">{res["I"]}</div>', unsafe_allow_html=True)
-
-    # 顯示給藥時間
-    st.markdown('<p class="label-text">建議給藥時間 (分鐘)</p>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value-box">{res["time"]}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown('<p class="label-text" style="text-align:center;">給藥前最終體積 (mL 數)</p>', unsafe_allow_html=True)
@@ -276,7 +268,7 @@ if selected_name != "-- 請選擇 --":
         2. 向上滑動選單，選擇「加入主畫面」。
         
         **Android (Chrome):**
-        1. 打開本網頁，點擊右上角「三個小點 (⋮) Foro 」。
+        1. 打開本網頁，點擊右上角「三個小點 (⋮) 」。
         2. 選擇「安裝應用程式」或「加到主螢幕」。
         
         *完成後，你的桌面上會出現一個 💊 小藥丸專屬圖示！*
