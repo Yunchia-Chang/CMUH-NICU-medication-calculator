@@ -88,8 +88,10 @@ def clear_fields():
 
 st.markdown("<h1>NICU 給藥計算機</h1>", unsafe_allow_html=True)
 
-# --- 4. 核心資料庫 ---
+# --- 4. 核心資料庫 (完整保留原本所有品項，並新增 1. Paracetamol 與 2. Voriconazole) ---
 drug_data = {
+    "Paracetamol (1000mg/100mL/Vial)": ["不需稀釋(=10mg/mL)，取實際dose，建議用1.5mL N/S drip 30 mins", "-", "dose/10", "-", "-", "-", "-", "D", "30"],
+    "Voriconazole(針劑) (200mg/Vial)": ["1vial加入19mL 注射用水 (1mL=10mg)，取實際dose，以N/S稀釋2倍 (1mL=5mg)，建議用1.5mL N/S drip 180 mins", "19mL 注射用水", "-", "dose/10", "N/S 2倍", "F*2", "-", "F*2", "180"],
     "Ceftaroline fosamil (600mg/Vial)": ["1 vail 加入 20mL 注射用水 (1mL=30mg) 配置，取實際dose，稀釋成 2.5倍量 (1ml=12mg)，建議用1.5 mL N/S drip 60mins", "20mL 注射用水", "-", "dose/30", "N/S 2.5倍", "-", "-", "F*2.5", "60"],
     "Ampicillin (500mg/Vial)": ["1 vail 加入 5mL 注射用水 (1mL=100mg) 配置，取實際dose給藥，建議用1.5mL N/S drip 30 mins", "5mL 注射用水", "-", "dose/100", "-", "-", "-", "F", "30"],
     "Gentamicin (80mg/2mL/Vial)": ["取實際dose，稀釋成4倍量 (1mL=10mg)給藥，建議用1.5mL N/S drip 60 mins", "-", "dose/40", "-", "N/S 4倍", "-", "-", "D*4", "60"],
@@ -122,11 +124,11 @@ drug_data = {
     "Aminophylline (250mg/10mL)": ["不需稀釋(=25mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins", "-", "dose/25", "-", "-", "-", "-", "D", "30"],
     "Caffeine citrate (20mg/mL)": ["不需稀釋(=20mg/mL) 取實際dose，建議用1.5mL N/S drip 30 mins ", "-", "dose/20", "-", "-", "-", "-", "D", "30"],
     "Diazepam (10 mg/2ml/Amp)": ["不稀釋 (5mg/mL)，IVP 0.4ml/min", "-", "dose/5", "-", "-", "-", "-", "D", "0.4ml/min"],
-    "Lorazepam (2mg/mL/Amp)": ["取實際dose，稀釋成5倍量  (濃度：1mL=0.4mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/2", "-", "N/S 5倍", "-", "-", "D*5", "30"],
-    "Phenobarbital (100mg/mL/Amp)": ["取實際dose，稀釋成10倍量  (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/100", "-", "N/S 10倍", "-", "-", "D*10", "30"],
-    "Levetiracetam (500mg/5mL/Vial)": ["取實際dose，稀釋成10倍量  (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/100", "-", "N/S 10倍", "-", "-", "D*10", "30"],
-    "Morphine (10 mg/ml/Amp)": ["取實際dose，稀釋成20倍量  (濃度：1mL=0.5mg)給藥，IVD建議用1.5mL N/S drip 15 mins", "-", "dose/10", "-", "N/S 20倍", "-", "-", "D*20", "30"],
-    "Fentanyl (0.05mg/mL) 2mL/Amp": ["取實際dose，稀釋成25倍量  (濃度：1mL=0.002mg)給藥，IVD建議用1.5mL N/S drip 30 mins", "-", "dose/0.05", "-", "N/S 25倍", "-", "-", "D*25", "30"],
+    "Lorazepam (2mg/mL/Amp)": ["取實際dose，稀釋成5倍量 (濃度：1mL=0.4mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/2", "-", "N/S 5倍", "-", "-", "D*5", "30"],
+    "Phenobarbital (100mg/mL/Amp)": ["取實際dose，稀釋成10倍量 (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/100", "-", "N/S 10倍", "-", "-", "D*10", "30"],
+    "Levetiracetam (500mg/5mL/Vial)": ["取實際dose，稀釋成10倍量 (濃度：1mL=10mg)給藥，建議用1.5mL N/S drip 30 mins", "-", "dose/100", "-", "N/S 10倍", "-", "-", "D*10", "30"],
+    "Morphine (10 mg/ml/Amp)": ["取實際dose，稀釋成20倍量 (濃度：1mL=0.5mg)給藥，IVD建議用1.5mL N/S drip 15 mins", "-", "dose/10", "-", "N/S 20倍", "-", "-", "D*20", "30"],
+    "Fentanyl (0.05mg/mL) 2mL/Amp": ["取實際dose，稀釋成25倍量 (濃度：1mL=0.002mg)給藥，IVD建議用1.5mL N/S drip 30 mins", "-", "dose/0.05", "-", "N/S 25倍", "-", "-", "D*25", "30"],
     "Ketamine (500mg/10mL/Vial)": ["IVP：不稀釋，取實際dose, IVP>1 min", "-", "dose/50", "-", "-", "-", "-", "D", "IVP>1 min"],
     "Pantoprazole (40mg/vial)": ["1vial加入10mL 注射用水 (1mL=4mg)，取實際dose，稀釋成5倍量 (1mL=0.8mg)，建議用1.5mL N/S drip 30 mins.", "10mL注射用水", "-", "dose/4", "N/S 5倍", "-", "-", "F*5", "30"],
     "Metoclopramide (10mg/2mL/Amp)": ["不需稀釋，取實際dose，建議用1.5mL N/S drip 30 mins", "-", "dose/5", "-", "-", "-", "-", "D", "30"],
@@ -221,7 +223,7 @@ if selected_name != "-- 請選擇 --":
                 })
         
     else:
-        # --- 一般藥物常規運算 ---
+        # --- 一般藥物常規運算 (包含 Voriconazole 與 Paracetamol) ---
         d = drug_data[selected_name]
         res["nicu"], res["E"], res["G"], res["I"], res["time"] = d[0], d[1], d[4], d[6], d[8]
         if dose > 0:
@@ -229,6 +231,17 @@ if selected_name != "-- 請選擇 --":
             f_val = eval(d[3].replace("dose", str(dose))) if d[3] != "-" else 0
             res["D"] = f"{d_val:.3f}" if d[2] != "-" else "-"
             res["F"] = f"{f_val:.3f}" if d[3] != "-" else "-"
+            
+            # 若定義了 H/F2 (如 Voriconazole 的 F*2)
+            if d[5] != "-":
+                f2_expr = d[5].replace("D", str(d_val)).replace("F", str(f_val))
+                f2_val = eval(f2_expr)
+                res["F2"] = f"{f2_val:.3f}"
+            else:
+                f2_val = 0
+                res["F2"] = "-"
+            
+            # 計算最終體積 J
             j_expr = d[7].replace("D", str(d_val)).replace("F", str(f_val))
             res["J"] = f"{eval(j_expr):.3f}"
             if res["I"] != "-": show_warning = True
@@ -240,7 +253,7 @@ if selected_name != "-- 請選擇 --":
     st.markdown('<p class="label-text">NICU 泡製方式說明:</p>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-box-style">{res["nicu"]}</div>', unsafe_allow_html=True)
     
-    # 所有欄位皆固定顯示，包含「再稀釋倍率」
+    # 所有欄位皆固定顯示，包含「再稀釋倍率」顯示為 '-'
     display_fields = [
         ("純藥液品項取藥量 (mL)", res["D"]),
         ("1 vial 配置液與量", res["E"]),
